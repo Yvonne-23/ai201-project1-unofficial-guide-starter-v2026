@@ -21,9 +21,7 @@
 
 ## What This Does
 
-<!-- Three or four sentences. Which corpus you picked, and the kinds of
-     questions your system answers. Write it for someone who has never seen
-     this repo.
+<!-- This project is a retrieval-based unofficial guide using the `city_guides` corpus. It answers questions about fictional towns in the region, including transportation, food, accessibility, parking, walking routes, and seasonal information. The system splits the guides into sections, retrieves relevant information for a user's question, and uses that information to generate an answer with sources. A relevance gate prevents the system from answering questions that are not supported by the city guides.
 
      Milestone 5. -->
 
@@ -107,7 +105,7 @@ cards only.
 
 **Answer:**
 
-```text
+```
 Prices on the Halden Bay harbour front are roughly double those on Fell Street for comparable food.
 
 Sources: `guide_eating.md` and `guide_halden_bay.md`
@@ -144,9 +142,9 @@ I tested five questions that should be answered by the city guides and five ques
 
      Milestone 5. -->
 
-**1.**
+**1.** I used AI to help me think through a better chunking strategy after I noticed that the original fixed-size chunks were cutting off words and sentences. AI suggested using the existing section headings in the city guides as chunk boundaries. I used that approach in `split_documents()` and then inspected five new sample chunks to make sure they contained complete thoughts before keeping the change.
 
-**2.**
+**2.** I used AI to help me interpret the retrieval distances when choosing a relevance cutoff. After testing five in-corpus and five out-of-scope questions, I shared the results with AI and compared the two groups. The highest in-corpus distance was 0.689 and the lowest out-of-scope distance was 0.754, so I changed the cutoff from 0.6 to 0.72. I then reran the previously blocked bus-ticket question to verify that it could now be answered correctly.
 
 <!-- ── Stretch features ─────────────────────────────────────────────────────
      Doing one? Say so here BEFORE you start. A feature this README never
