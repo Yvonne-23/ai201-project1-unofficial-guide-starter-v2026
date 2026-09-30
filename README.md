@@ -101,27 +101,37 @@ cards only.
 <!-- One complete question and answer, pasted as text, with the source line
      visible. Milestone 4. -->
 
-**Question:**
+## Sample Answer
+
+**Question:** How do food prices on the Halden Bay harbour front compare with Fell Street?
 
 **Answer:**
 
+```text
+Prices on the Halden Bay harbour front are roughly double those on Fell Street for comparable food.
+
+Sources: `guide_eating.md` and `guide_halden_bay.md`
+
+Sources retrieved: guide_eating.md, guide_halden_bay.md, guide_pellew_sands.md, guide_regional_transport.md
 ```
-```
 
-**My relevance cutoff:**
 
-<!-- The number you set in config.py, and how you got there.
+**My relevance cutoff:** `0.72`
 
-     You ran five questions your corpus covers and the five in OUT_OF_SCOPE
-     that it clearly doesn't, and wrote down the best distance for each. What
-     did those two groups look like? Where was the gap? Put the actual numbers
-     here — the table below wants all ten rows.
-
-     Milestone 4. -->
+I tested five questions that should be answered by the city guides and five questions that were outside the corpus. The in-corpus distances ranged from 0.266 to 0.689, while the out-of-scope distances ranged from 0.754 to 0.899. The original cutoff of 0.6 incorrectly blocked an in-corpus question with a distance of 0.689. I chose 0.72 because it falls in the gap between the highest in-corpus distance (0.689) and the lowest out-of-scope distance (0.754).
 
 | Question | In corpus? | Best distance |
-|---|---|---|
-|  |  |  |
+|---|---|---:|
+| Can I take a bus from Brightwater to Kestrelford on a Sunday? | Yes | 0.266 |
+| How do food prices on the Halden Bay harbour front compare with Fell Street? | Yes | 0.301 |
+| Can I use the same bus ticket with different bus operators in the region? | Yes | 0.689 |
+| Where can I park for free in Pellew Sands? | Yes | 0.445 |
+| When is the Halden Bay coastal path closed? | Yes | 0.311 |
+| What is the capital of Mongolia? | No | 0.754 |
+| How do I change the oil in a diesel engine? | No | 0.889 |
+| Who won the 1994 World Cup? | No | 0.899 |
+| What is the recommended dosage of ibuprofen? | No | 0.823 |
+| How do I write a for loop in Rust? | No | 0.838 |
 
 ## How I Used AI
 
