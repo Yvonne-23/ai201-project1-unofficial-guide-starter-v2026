@@ -23,8 +23,7 @@ For at least 4 of my 5 test questions, the retrieved chunks include one that
 contains the answer.
 
 **Why this target:**
-<!-- e.g. "One of my questions is about a topic only two documents mention, so
-     I expect that one to be hard." -->
+<!-- The city guides are longer documents where useful information can be spread across different sections and paragraphs. I chose 4 out of 5 because I expect the system to retrieve the right information most of the time, while allowing for one question where the answer may be harder to locate because of how the information is organized." -->
 
 ---
 
@@ -33,8 +32,7 @@ contains the answer.
 Every answer the system produces names at least one source document.
 
 **Why this target:**
-<!-- Why all five and not four? What about your setup makes that achievable —
-     or what would have to go wrong for it not to be? -->
+<!--Since the system answers questions using information from the city guides, users should be able to see where the information came from. I chose every answer because source attribution is already part of the pipeline, so an answer without a source would make it harder to verify that the response is actually based on the provided documents. -->
 
 ---
 
@@ -50,47 +48,30 @@ in at least 4 of 5 tries.
      just keep five of them, or the "4 of 5" above has nothing to be 4 of. -->
 
 **Why this target:**
-<!-- What did your distances look like when you set the cutoff in Milestone 4?
-     Was there a clean gap, or did the two groups overlap? -->
+<!-- The system should avoid giving an answer when the city guides do not contain enough relevant information. I chose 4 out of 5 because I want the relevance gate to reliably recognize questions outside the corpus, while allowing for one case where an unrelated question may still retrieve text that appears similar enough to pass the cutoff. -->
 
 ---
 
 ## 4. Something about your chunks
 
-<!-- YOU WRITE THIS ONE.
-
-     How would you know if your chunks were the right size? Name something
-     countable or observable.
-
-     Examples of the right shape — don't copy these, they should come from
-     what you actually saw in Milestone 3:
-       - "At least 4 of 5 sampled chunks read as a complete thought, with no
-          sentence cut in half at either end."
-       - "No chunk is shorter than 200 characters, since anything below that
-          in my corpus turned out to be a heading with no content under it." -->
+<!-- When I look at 5 sample chunks, at least 4 of them should contain complete thoughts without sentences being cut off at the beginning or end. -->
 
 
 
 **Why this target:**
-
+I chose this target because the original chunker cut some sentences and words in half, which made some chunks difficult to understand on their own. I chose 4 out of 5 because most sampled chunks should contain enough complete information to make sense without needing the text before or after them.
 
 
 ---
 
 ## 5. Your choice
 
-<!-- YOU WRITE THIS ONE TOO.
-
-     Pick something you actually care about getting right. It could be about
-     speed, about refusals, about a particular kind of question your corpus
-     handles badly, about source attribution being correct rather than merely
-     present — anything, as long as it names a number or an observable
-     outcome. -->
+<!-- For at least 4 of my 5 test questions, the answer should cite a source document that actually contains information relevant to the answer. -->
 
 
 
 **Why this target:**
-
+I chose this target because naming a source is only useful if that source actually supports the answer being given. I chose 4 out of 5 because I want the system to provide relevant sources consistently, while allowing for one question where retrieval may return a less relevant document.
 
 
 ---
