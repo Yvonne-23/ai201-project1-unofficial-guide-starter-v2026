@@ -31,6 +31,7 @@ import chromadb  # noqa: E402
 
 import config
 from chunker import Chunk
+from rank_bm25 import BM25Okapi
 
 
 @dataclass
@@ -49,6 +50,9 @@ _model = None
 # The model Chroma bundles. Anything else in config.EMBEDDING_MODEL means
 # "fetch that one from Hugging Face instead" — see `_embedder`.
 BUNDLED_MODEL = "all-MiniLM-L6-v2"
+def _tokenize(text: str) -> list[str]:
+    """Prepare text for BM25 keyword matching."""
+    return text.lower().split()
 
 
 class _OnnxEmbedder:
@@ -185,9 +189,10 @@ def search(
     variant: str = "default",
 ) -> list[Result]:
     """
-    Retrieve the chunks closest in meaning to a question.
+    Retrieve chunks using hybrid semantic and BM25 keyword search.
 
-    Returns them nearest-first, each with its distance.
+    Returns the best combined matches while preserving cosine distance
+    for the relevance gate.
     """
     top_k = top_k or config.TOP_K
     name = config.collection_name(corpus, variant)
@@ -199,15 +204,57 @@ def search(
             f"No index called '{name}'. Run `python app.py index` first."
         ) from exc
 
+    # Get all stored chunks so BM25 can score the entire corpus.
+    all_data = collection.get(include=["documents", "metadatas"])
+    documents = all_data["documents"]
+
+    tokenized_documents = [_tokenize(doc) for doc in documents]
+    bm25 = BM25Okapi(tokenized_documents)
+    bm25_scores = bm25.get_scores(_tokenize(question))
+
+    # Get semantic distances for all chunks.
     raw = collection.query(
         query_embeddings=embed([question]),
-        n_results=min(top_k, collection.count()),
+        n_results=collection.count(),
     )
 
+    semantic_items = list(
+        zip(
+            raw["documents"][0],
+            raw["metadatas"][0],
+            raw["distances"][0],
+        )
+    )
+
+    # Match each document to its BM25 keyword score.
+    bm25_by_text = {
+        doc: float(score)
+        for doc, score in zip(documents, bm25_scores)
+    }
+
+    max_bm25 = max(bm25_scores) if len(bm25_scores) else 0.0
+
+    # Combine semantic similarity (70%) with keyword relevance (30%).
+    def hybrid_score(item):
+        text, meta, distance = item
+
+        semantic_score = 1.0 - float(distance)
+        bm25_score = bm25_by_text.get(text, 0.0)
+
+        normalized_bm25 = (
+            bm25_score / max_bm25
+            if max_bm25 > 0
+            else 0.0
+        )
+
+        return (0.7 * semantic_score) + (0.3 * normalized_bm25)
+
+    semantic_items.sort(key=hybrid_score, reverse=True)
+    semantic_items = semantic_items[:top_k]
+
     results: list[Result] = []
-    for text, meta, distance in zip(
-        raw["documents"][0], raw["metadatas"][0], raw["distances"][0]
-    ):
+
+    for text, meta, distance in semantic_items:
         results.append(
             Result(
                 text=text,
@@ -217,8 +264,8 @@ def search(
                 produced_by=str(meta.get("produced_by", "unknown")),
             )
         )
-    return results
 
+    return results
 
 def index_exists(corpus: str | None = None, variant: str = "default") -> bool:
     """Is there an index here to search, without searching it?
