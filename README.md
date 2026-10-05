@@ -269,6 +269,13 @@ Four of the five test questions produced answers supported by the cited source d
      low, and which one you'd tighten and to what.
 
      Milestone 3. -->
+### Criterion 2 — Every answer names a source
+
+**Stage:** Retrieval → Generation
+
+**Diagnosis:** The failure appeared on the Pellew Sands parking question. The system retrieved documents related to Pellew Sands, but the top retrieved chunks did not include the section containing the actual free parking information. Because the needed information was missing from the retrieved context, the model responded that it did not have enough information. In some runs, that refusal also did not name a source document, causing Criterion 2 to miss its target.
+
+The problem begins at retrieval rather than generation alone. The correct information exists in the corpus, but the relevant chunk was not included in the top retrieved results. This then affects generation because the model cannot cite the correct source information if it never receives that chunk.
 
 ## The Improvement
 
