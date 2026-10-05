@@ -281,46 +281,47 @@ The problem begins at retrieval rather than generation alone. The correct inform
 
 **What I changed:**
 
+I changed the retrieval stage from semantic-only search to hybrid search. The new approach combines semantic similarity from Chroma with BM25 keyword matching. Semantic similarity receives 70% of the combined score and BM25 receives 30%. This allows exact terms in a question to influence which chunks are returned while still keeping semantic meaning as the main retrieval signal.
+
 **Why I picked it:**
+
+I picked hybrid search because the Pellew Sands parking failure was diagnosed as a retrieval problem. The correct parking information exists in the corpus, but semantic search did not return the chunk containing it, even when I inspected the top 30 results. Hybrid search was intended to give exact terms such as "Pellew Sands," "park," and "free" more influence in the ranking.
 
 <!-- Connect it to a specific diagnosis above in one sentence. If you can't,
      you picked a fix because it sounded impressive. -->
 
 ### Run Log — After
 
-<!-- Same format, same five criteria, three runs each.
-     `python run_eval.py --label after` -->
-
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| 1. Retrieved chunk contains the answer | 4 of 5 | 4/5 | 4/5 | 4/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 4/5 | 5/5 | 5/5 | MISSED |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. At least 4 of 5 sampled chunks are complete thoughts | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. Answers cite a relevant source | 4 of 5 | 4/5 | 4/5 | 4/5 | MET |
+
+The after evaluation was produced by `run_eval.py::main`, using `store.py::search` for retrieval and `chunker.py::split_documents` for chunks. The corpus was `city_guides`, top-k was 5, and the relevance cutoff remained 0.72.
+
+The main remaining failure was the Pellew Sands parking question. In all three runs, the system still failed to retrieve the chunk containing the answer about free parking. Run 1 responded that there was not enough information and did not name a source. Runs 2 and 3 named sources, but those sources still did not provide the requested Pellew Sands parking information.
+
+The out-of-corpus gate continued to refuse all 5 of 5 test questions. The best distances were 0.803 for the Mongolia question, 0.915 for the diesel engine question, 0.899 for the 1994 World Cup question, 0.874 for the ibuprofen question, and 0.838 for the Rust question. All remained above the 0.72 relevance cutoff.
 
 **Did it help?**
 
-<!-- Say plainly whether it did, and how you know. If it made things worse,
-     say that — a change that backfired, honestly reported, earns full credit
-     and is more interesting than one that worked. What matters is that you can
-     tell.
+The hybrid search had a limited effect, but it did not solve the main retrieval failure. Before the change, Criterion 1 scored 4/5 in all three runs, and after the change it remained 4/5 in all three runs. The Pellew Sands parking answer was still missing from the retrieved chunks.
 
-     Milestone 4. -->
+The change did alter the set of documents retrieved for the Pellew Sands question and Criterion 2 improved slightly from 4/5, 5/5, and 4/5 before to 4/5, 5/5, and 5/5 after. However, because the target for Criterion 2 was 5/5 in every run, it remained MISSED. The relevance gate remained successful at 5/5.
+
+Overall, the improvement did not fix the underlying problem. This suggests that adding BM25 keyword ranking alone was not enough to surface the specific parking chunk.
 
 ## What's Still Broken
 
-<!-- For each criterion still missed after your fix: what you'd do about it,
-     and why you stopped where you did.
+Criterion 2 is still missed because the first Pellew Sands response did not name a source. More importantly, the underlying retrieval problem for the Pellew Sands parking question is still present. The correct information exists in the corpus, but the relevant chunk is not appearing in the top five results even after combining semantic and BM25 retrieval.
 
-     "I ran out of time" is fine if it's true. Pretending nothing is left is
-     not.
-
-     Milestone 5. -->
+If I continued improving the system, I would inspect how the Pellew Sands parking section is chunked and tokenized and compare its semantic and BM25 scores with the chunks that outrank it. I would then experiment with the hybrid weighting or a more targeted reranking strategy. I stopped here because the assignment asks for one improvement based on the diagnosis, and I wanted the after evaluation to honestly measure that single change rather than repeatedly modifying the system until the test passed.
 
 ## What I'd Do Differently
 
-<!-- Knowing what you know now — which of your five criteria would you write
-     differently, and why?
+I would rewrite Criterion 2. My original criterion, "Every answer names a source," does not distinguish between a successful in-scope answer and a refusal caused by missing evidence. A better criterion would be: "Every in-scope answer that provides factual information names a relevant source, while answers without sufficient evidence clearly state that no supporting source was found."
 
-     Milestone 5. -->
+This would test source attribution without encouraging the model to cite an irrelevant document simply to satisfy the requirement that every response contain a source.
