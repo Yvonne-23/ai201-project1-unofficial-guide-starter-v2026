@@ -173,15 +173,63 @@ I tested five questions that should be answered by the city guides and five ques
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| 1. Retrieved chunks contain the answer | 4 of 5 | 4/5 | 4/5 | 4/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 4/5 | 5/5 | 5/5 | MISSED |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Sample chunks contain complete thoughts | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. Cited source is relevant to the answer | 4 of 5 | 4/5 | 4/5 | 4/5 | MET |
 
-<!-- Underneath, paste the REAL output for each criterion from one of your
-     runs — the actual text your system produced, not a description of it.
-     Name the file and function that produced it. -->
+<!--### Baseline Evidence
+
+Produced by `run_eval.py::main`, with retrieval from `store.py::search` and chunks from `chunker.py::split_documents`.
+
+**Criterion 1 — Retrieved chunks contain the answer**
+
+For 4 of the 5 test questions, the retrieved chunks contained enough information to answer the question. The Pellew Sands parking question was the exception. Although `guide_pellew_sands.md` was retrieved, the specific chunk containing the free parking information was not returned.
+
+**Example successful output:**
+
+```text
+Question: Can I take a bus from Brightwater to Kestrelford on a Sunday?
+
+No, you cannot take a bus from Brightwater to Kestrelford on a Sunday,
+as the service does not run on Sundays.
+
+Source: guide_regional_transport.md and guide_kestrelford.md
+```
+
+**Criterion 2 — Every answer names a source**
+
+One answer in Run 1 did not name a source:
+
+```text
+Question: Where can I park for free in Pellew Sands?
+
+I do not have enough information to answer where you can park for free
+in Pellew Sands.
+```
+
+The other answers named at least one source document.
+
+**Criterion 3 — Relevance gate**
+
+```text
+Gate refused 5 of 5 out-of-scope questions.
+
+What is the capital of Mongolia? — refused
+How do I change the oil in a diesel engine? — refused
+Who won the 1994 World Cup? — refused
+What is the recommended dosage of ibuprofen for a headache? — refused
+How do I write a for loop in Rust? — refused
+```
+
+**Criterion 4 — Complete chunks**
+
+The five sample chunks produced by `chunker.py::split_documents` remained complete section-based thoughts without sentences being cut off at the beginning or end.
+
+**Criterion 5 — Relevant cited sources**
+
+Four of the five test questions produced answers supported by the cited source documents. The Pellew Sands parking question did not produce the expected parking answer because the relevant parking chunk was not retrieved. -->
 
 ## Verdicts
 
@@ -196,11 +244,11 @@ I tested five questions that should be answered by the city guides and five ques
 
 | # | Criterion | Verdict | How I decided |
 |---|---|---|---|
-| 1 |  |  |  |
-| 2 |  |  |  |
-| 3 |  |  |  |
-| 4 |  |  |  |
-| 5 |  |  |  |
+| 1 | Retrieved chunks contain the answer | MET | All three runs scored 4/5. The Pellew Sands parking question was the only failure because the retrieved chunks did not contain the parking information. The 4/5 target was met in every run. |
+| 2 | Every answer names a source | MISSED | Run 1 scored 4/5 because the Pellew Sands parking answer did not name a source. Runs 2 and 3 scored 5/5, but the target required every answer to name a source, so the target did not hold across all three runs. |
+| 3 | Gate stops out-of-corpus questions | MET | The relevance gate refused all 5 out-of-scope questions, exceeding the target of 4/5. |
+| 4 | Sample chunks contain complete thoughts | MET | All 5 inspected chunks contained complete thoughts without sentences being cut off at the beginning or end, exceeding the target of 4/5. |
+| 5 | Cited source is relevant to the answer | MET | Four of the five questions produced answers supported by relevant cited source documents. The Pellew Sands parking question was the exception, giving a result of 4/5, which met the target. |
 
 ## Diagnoses
 
